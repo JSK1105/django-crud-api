@@ -22,16 +22,29 @@ def read_messages(request):
 @csrf_exempt
 def update_message(request, message_id):
     if request.method == "PUT":
-        data = json.loads(request.body)
-        message = Message.objects.get(id=message_id)
-        message.content = data["content"]
-        message.is_edited = True
-        message.save()
-        return JsonResponse({"message": "Message updated"})
+        try:
+            data = json.loads(request.body)
+            message = Message.objects.get(id=message_id)
+            message.content = data["content"]
+            message.is_edited = True
+            message.save()
+            return JsonResponse({"message": "Message updated"}, status=200)
+        except Message.DoesNotExist:
+            return JsonResponse({"error": "Message not found"}, status=404)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+    return JsonResponse({"error": "Invalid request method"}, status=400)
+
 @csrf_exempt
 def delete_message(request, message_id):
     if request.method == "DELETE":
-        message = Message.objects.get(id=message_id)
-        message.delete()
-        return JsonResponse({"message": "Message deleted"})
+        try:
+            message = Message.objects.get(id=message_id)
+            message.delete()
+            return JsonResponse({"message": "Message deleted"}, status=200)
+        except Message.DoesNotExist:
+            return JsonResponse({"error": "Message not found"}, status=404)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+    return JsonResponse({"error": "Invalid request method"}, status=400)
 
